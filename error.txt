@@ -1,6 +1,14 @@
 INFO:     Will watch for changes in these directories: ['C:\\Users\\anson\\Desktop\\git\\tradeewa']
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [24684] using StatReload
+INFO:     Started reloader process [20192] using StatReload
+C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\pydantic\_internal\_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+Form data requires "python-multipart" to be installed. 
+You can install "python-multipart" with: 
+
+pip install python-multipart
+
 Process SpawnProcess-1:
 Traceback (most recent call last):
   File "C:\Users\anson\AppData\Local\Programs\Python\Python313\Lib\multiprocessing\process.py", line 313, in _bootstrap
@@ -42,50 +50,50 @@ Traceback (most recent call last):
   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
   File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-  File "C:\Users\anson\Desktop\git\tradeewa\backend\main.py", line 6, in <module>
-    from . import crud, models, schemas, security, mail
-  File "C:\Users\anson\Desktop\git\tradeewa\backend\crud.py", line 3, in <module>
-    from . import models, schemas
-  File "C:\Users\anson\Desktop\git\tradeewa\backend\models.py", line 4, in <module>
-    from .security import pwd_context
-  File "C:\Users\anson\Desktop\git\tradeewa\backend\security.py", line 5, in <module>
-    from .config import settings
-  File "C:\Users\anson\Desktop\git\tradeewa\backend\config.py", line 18, in <module>
-    settings = Settings()
-  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\pydantic_settings\main.py", line 194, in __init__
-    super().__init__(
-    ~~~~~~~~~~~~~~~~^
-        **__pydantic_self__._settings_build_values(
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ...<27 lines>...
-        )
-        ^
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\main.py", line 44, in <module>
+    @app.post("/token", response_model=schemas.Token)
+     ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\fastapi\routing.py", line 1078, in decorator
+    self.add_api_route(
+    ~~~~~~~~~~~~~~~~~~^
+        path,
+        ^^^^^
+    ...<23 lines>...
+        generate_unique_id_function=generate_unique_id_function,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     )
     ^
-  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\pydantic\main.py", line 250, in __init__
-    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
-pydantic_core._pydantic_core.ValidationError: 8 validation errors for Settings
-MAIL_USERNAME
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-MAIL_PASSWORD
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-MAIL_FROM
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-MAIL_PORT
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-MAIL_SERVER
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-MAIL_STARTTLS
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-MAIL_SSL_TLS
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
-SECRET_KEY
-  Field required [type=missing, input_value={}, input_type=dict]
-    For further information visit https://errors.pydantic.dev/2.12/v/missing
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\fastapi\routing.py", line 1017, in add_api_route
+    route = route_class(
+        self.prefix + path,
+    ...<24 lines>...
+        generate_unique_id_function=current_generate_unique_id,
+    )
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\fastapi\routing.py", line 636, in __init__
+    self.dependant = get_dependant(
+                     ~~~~~~~~~~~~~^
+        path=self.path_format, call=self.endpoint, scope="function"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\fastapi\dependencies\utils.py", line 282, in get_dependant
+    sub_dependant = get_dependant(
+        path=path,
+    ...<4 lines>...
+        scope=param_details.depends.scope,
+    )
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\fastapi\dependencies\utils.py", line 260, in get_dependant
+    param_details = analyze_param(
+        param_name=param_name,
+    ...<2 lines>...
+        is_path_param=is_path_param,
+    )
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\fastapi\dependencies\utils.py", line 496, in analyze_param
+    ensure_multipart_is_installed()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\anson\Desktop\git\tradeewa\backend\venv\Lib\site-packages\fastapi\dependencies\utils.py", line 122, in ensure_multipart_is_installed
+    raise RuntimeError(multipart_not_installed_error) from None
+RuntimeError: Form data requires "python-multipart" to be installed.
+You can install "python-multipart" with:
+
+pip install python-multipart
