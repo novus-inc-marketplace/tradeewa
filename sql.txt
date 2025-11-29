@@ -1,0 +1,148 @@
+ Setting Up PostgreSQL for TradeEwa
+
+  This guide will walk you through installing PostgreSQL, creating a dedicated database and user for your project, and configuring your FastAPI backend to connect to  
+  it.
+
+  Step 1: Install PostgreSQL
+
+  For Windows (Recommended Method: Official Installer)
+
+   1. Download the Installer: Go to the official PostgreSQL downloads page: https://www.postgresql.org/download/windows/ (https://www.postgresql.org/download/windows/)
+   2. Run the Installer:
+       * Choose the latest stable version (e.g., PostgreSQL 16.x).
+       * Follow the installation wizard.
+       * Crucial Step: Set a strong password for the `postgres` superuser. Remember this password; you'll need it.
+       * Accept the default ports (usually 5432).
+       * Select the components to install. Ensure "PostgreSQL Server" and "pgAdmin 4" are selected. pgAdmin 4 is a graphical administration tool that will make        
+         management easier.
+       * Complete the installation.
+
+  Step 2: Create a Database and User for TradeEwa using pgAdmin 4
+
+  pgAdmin 4 is a powerful graphical interface for managing your PostgreSQL databases.
+
+   1. Launch pgAdmin 4: After installation, search for and open "pgAdmin 4".
+   2. Connect to Server:
+       * In the left sidebar, under "Servers," you should see "PostgreSQL <version number>".
+       * Double-click it, and it will ask for the password you set for the postgres superuser during installation. Enter it.
+   3. Create a New Login/Group Role (User):
+       * Right-click on "Login/Group Roles" (under your server) -> "Create" -> "Login/Group Role...".
+       * General Tab:
+           * Name: tradeewa_user (or any username you prefer, but remember it).
+       * Definition Tab:
+           * Password: Set a strong password for this user (e.g., tradeewa_password). Remember this!
+       * Privileges Tab:
+           * Ensure "Can login?" is set to Yes.
+       * Click "Save".
+   4. Create a New Database:
+       * Right-click on "Databases" (under your server) -> "Create" -> "Database...".
+       * General Tab:
+           * Database: tradeewa_db (or any database name you prefer).
+           * Owner: Select the tradeewa_user you just created from the dropdown.
+       * Click "Save".
+
+  Now you have a dedicated user (tradeewa_user) and a database (tradeewa_db) owned by that user.
+
+  Step 3: Configure Your FastAPI Backend
+
+  You need to update the SQLALCHEMY_DATABASE_URL in backend/database.py with the connection details for your new database.
+
+   1. Open `backend/database.py`:
+       * The current line is: SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
+   2. Update the URL: Change it to the following format, replacing the placeholders with your actual values:
+
+   1     SQLALCHEMY_DATABASE_URL = "postgresql://tradeewa_user:tradeewa_password@localhost:5432/tradeewa_db"
+
+       * tradeewa_user: The username you created in pgAdmin.
+       * tradeewa_password: The password for tradeewa_user.
+       * localhost: Your database server's host (since it's on your machine).
+       * 5432: The default PostgreSQL port (if you changed it during installation, use your custom port).
+       * tradeewa_db: The database name you created in pgAdmin.
+
+  Step 4: Verify the Installation and Connection
+
+   1. Start the Backend:
+       * Open your terminal in the tradeewa/backend directory.
+       * Activate your virtual environment: .\venv\Scripts\activate
+       * Run the FastAPI application using Uvicorn: uvicorn main:app --reload
+       * You should see output indicating that the server is running (e.g., "Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)").
+       * Check for errors: If there are any errors related to database connection, double-check your SQLALCHEMY_DATABASE_URL in backend/database.py and ensure
+         PostgreSQL is running.
+
+   2. Test the Signup Endpoint:
+       * Open your web browser and go to http://127.0.0.1:8000/docs (the FastAPI interactive documentation).
+       * Find the POST /users/ endpoint.
+       * Click "Try it out".
+       * Provide an email and password in the request body.
+       * Click "Execute".
+       * Expected Result: You should get a 200 OK response with the new user's details. If you get a 500 Internal Server Error, check the backend console for
+         database-related error messages.
+
+   3. Verify in pgAdmin 4:
+       * In pgAdmin 4, expand "Databases" -> tradeewa_db -> "Schemas" -> "public" -> "Tables".
+       * You should see a users table and a verification_tokens table.
+       * Right-click on the users table -> "View/Edit Data" -> "All Rows". You should see the user you just created via the API.
+
+  This completes the PostgreSQL setup and initial verification.
+
+  Once you have set up PostgreSQL and confirmed the backend can connect and create users, please let me know, and we can proceed with the next steps for frontend email
+  verification.## Setting Up PostgreSQL for TradeEwa
+
+  This guide covers PostgreSQL installation, database/user creation, and FastAPI backend configuration.
+
+  Step 1: Install PostgreSQL
+
+  For Windows (Official Installer Recommended)
+
+   1. Download: Get the installer from https://www.postgresql.org/download/windows/ (https://www.postgresql.org/download/windows/).
+   2. Install:
+       * Choose the latest stable version (e.g., PostgreSQL 16.x).
+       * Follow the wizard, setting a strong password for the `postgres` superuser (remember it).
+       * Accept default port (5432).
+       * Ensure "PostgreSQL Server" and "pgAdmin 4" are selected.
+       * Complete the installation.
+
+  Step 2: Create a Database and User with pgAdmin 4
+
+   1. Launch pgAdmin 4.
+   2. Connect to Server: Double-click "PostgreSQL <version>" under "Servers", then enter your postgres superuser password.
+   3. Create Login/Group Role (User):
+       * Right-click "Login/Group Roles" -> "Create" -> "Login/Group Role...".
+       * General Tab: Name it tradeewa_user.
+       * Definition Tab: Set a strong password (e.g., tradeewa_password).
+       * Privileges Tab: "Can login?" -> Yes.
+       * Click "Save".
+   4. Create Database:
+       * Right-click "Databases" -> "Create" -> "Database...".
+       * General Tab:
+           * Database: tradeewa_db.
+           * Owner: Select tradeewa_user.
+       * Click "Save".
+
+  Step 3: Configure Your FastAPI Backend
+
+  Update backend/database.py:
+
+   1. Open `backend/database.py`.
+   2. Change `SQLALCHEMY_DATABASE_URL`:
+
+   1     SQLALCHEMY_DATABASE_URL = "postgresql://tradeewa_user:tradeewa_password@localhost:5432/tradeewa_db"
+      Replace tradeewa_user, tradeewa_password, and tradeewa_db with your actual values if different.
+
+  Step 4: Verify Installation and Connection
+
+   1. Start Backend:
+       * In tradeewa/backend: .\venv\Scripts\activate
+       * Then: uvicorn main:app --reload
+       * Confirm server runs, check for connection errors.
+
+   2. Test Signup Endpoint:
+       * Go to http://127.0.0.1:8000/docs.
+       * Find POST /users/, click "Try it out".
+       * Enter email and password, click "Execute".
+       * Expect a 200 OK response. 500 Internal Server Error means database issues.
+
+   3. Verify in pgAdmin 4:
+       * Expand tradeewa_db -> "Schemas" -> "public" -> "Tables".
+       * Confirm users and verification_tokens tables exist.
+       * Right-click users -> "View/Edit Data" -> "All Rows" to see your new user.

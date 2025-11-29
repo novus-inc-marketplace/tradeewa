@@ -1,0 +1,250 @@
+Build a secure, scalable copy-trading web application MVP that allows users to follow and automatically copy trades of professional traders (signal providers). After the web MVP is complete and production-ready, prepare cross-platform desktop/mobile app builds (APK for Android, EXE for Windows) that reuse the same backend and business logic.
+
+1) Goals & Success Criteria (MVP)
+
+Allow users to register, complete KYC-lite, deposit/withdraw (demo and live wallets), discover signal providers, follow a provider, and automatically copy trades to their linked broker/wallet.
+
+Real-time order execution for copied trades, configurable allocation and risk settings per follower.
+
+Minimal latency for market events and order placement (use websockets).
+
+Secure authentication (email, password + optional 2FA).
+
+Admin dashboard for managing providers, user disputes, and monitoring metrics.
+
+Deliverables: UI designs (desktop + responsive), frontend code, backend services, API docs (OpenAPI/Swagger), deployment scripts (Docker + Kubernetes manifests or Docker Compose), test suite, CI/CD pipeline config.
+
+Acceptance: end-to-end test where a provider executes a simulated trade in sandbox and a follower’s sandbox account receives a matching order according to allocation & risk settings.
+
+2) MVP Feature List (prioritized)
+Core user flows
+
+User auth: signup, login, email verification, password reset, 2FA (TOTP).
+
+Profiles: user profile, KYC upload (ID image + selfie), role = trader or follower (users can be both).
+
+Market sandbox: demo wallet with simulated balance for testing copy trades.
+
+Broker integration (MVP: simulate + one real integration):
+
+Provide a generic broker adapter interface; implement a simulator adapter and one real broker (e.g., MetaTrader 5 via bridge, or a crypto exchange like Binance) depending on scope.
+
+Signal provider management: traders publish strategy profile, performance metrics, minimum follower amount, max drawdown.
+
+Copy settings (per follower per provider): percent allocation, fixed lot size, stop-loss/TP multiplier, max exposure, delay tolerance.
+
+Auto-copy engine: listens to provider trade events and issues follower trades according to mapping rules.
+
+Payment flows: webhooks for deposits/withdrawals (MVP: integrate Stripe or PayPal for fiat onramp; support demo wallet initially).
+
+Analytics & reporting: PnL per user/provider, trade history, open positions, fees charged.
+
+Admin panel: user & KYC review, logs, disable provider, view system health.
+
+Nice-to-have (post-MVP)
+
+Social feed, provider verification badges, advanced risk analytics, leaderboards, in-app messaging.
+
+3) Non-Functional Requirements
+
+Latency: websockets for market/position updates; backend event processing under 200ms for simulated trades; aim lower for real broker integration.
+
+Scalability: horizontally scalable services (stateless backend pods + Postgres + Redis + message queue).
+
+Resilience: retry logic, idempotent order placement, circuit breakers for broker connectivity.
+
+Security: encryption at rest for sensitive data, HTTPS only, store secrets in vault, OWASP hardened.
+
+Observability: traces (OpenTelemetry), metrics (Prometheus), logs (structured JSON), alerting.
+
+Regulatory/Compliance: support KYC data retention rules; prepare for GDPR/PCI as needed; store PII encrypted.
+
+Testing: unit, integration, end-to-end (Cypress or Playwright), and simulated load tests.
+
+4) Suggested Tech Stack
+
+Frontend: React + TypeScript, Vite, Zustand or Redux, Tailwind CSS for UI. Responsive + desktop-first.
+
+Backend: Node.js (NestJS or Fastify) or Python (FastAPI) — REST + GraphQL optional.
+
+Real-time: WebSocket (Socket.IO or native WS) or use GraphQL subscriptions.
+
+Database: PostgreSQL (primary), Redis (caching + pub/sub).
+
+Message queue: RabbitMQ or Kafka (or Redis streams) for trade events and the copy engine.
+
+Containerization & infra: Docker, Kubernetes (EKS/GKE) or Docker Compose for MVP.
+
+CI/CD: GitHub Actions or GitLab CI; pipeline builds, tests, security scans, image push.
+
+Monitoring: Prometheus + Grafana, Sentry for errors.
+
+Auth & payments: Auth0 / Keycloak or custom JWT + 2FA; Stripe for fiat payments.
+
+Broker adapters: plugin architecture to add MT5/MT4, Interactive Brokers, Binance, Coinbase. MVP: simulator + one adapter.
+
+5) Architecture Overview (high level)
+
+API Gateway → routes to auth, user, market, copy-engine, broker-adapter, admin.
+
+Copy Engine Service (consumer of provider trade events): receives provider trade events via an internal event bus, calculates follower orders (allocation & risk rules), enqueues orders to order-executor.
+
+Order Executor: sends orders to selected broker adapter; confirms fills; updates DB; emits web socket updates.
+
+Broker Adapters: standard interface place_order, cancel_order, get_positions, get_balance. Implement simulator_adapter for testing.
+
+Worker queue: for retries, reconciliation, KYC processing.
+
+Frontend: dashboard, provider pages, market viewer, copy config modal, wallet manager.
+
+6) Data Model (example core tables)
+
+users (id, email, hashed_password, role, created_at, kyc_status, encrypted_kyc_data)
+
+providers (id, user_id, strategy_name, description, stats_json, status)
+
+followers (id, follower_user_id, provider_id, settings_json, created_at)
+
+accounts (id, user_id, broker_adapter, account_identifier, balance, currency, is_demo)
+
+trades (id, provider_trade_id, user_id, side, instrument, qty, price, status, timestamp)
+
+orders (id, trade_id, broker_order_id, status, executed_price, executed_qty, timestamps)
+
+wallets (id, user_id, currency, balance)
+
+audit_logs (id, user_id, action, details, timestamp)
+
+7) Example APIs (OpenAPI style snippets)
+
+POST /api/v1/auth/signup
+Body: { email, password, display_name } → returns { user, token }.
+
+POST /api/v1/providers (provider creates a profile)
+Body: { strategy_name, description, min_follow_amount, fee_percent } → returns provider object.
+
+POST /api/v1/follow
+Body: { provider_id, account_id, allocation_percent, max_drawdown_pct } → returns follow subscription.
+
+Websocket events
+
+provider.trade → { provider_id, trade_id, instrument, side, qty, price, timestamp }
+
+follower.order.update → { order_id, status, filled_qty, filled_price }
+
+(Require OpenAPI documentation for all endpoints.)
+
+8) Copy Logic Behaviour (clear rules for implementer)
+
+When a provider trade event arrives:
+
+Validate provider is active.
+
+For each follower with active mapping and sufficient balance, compute order_qty = follower_balance * allocation_percent / provider_trade_value (respect stop-loss / max exposure).
+
+Apply slippage tolerance and reject if broker quote deviates more than X%.
+
+Place order via Order Executor using adapter.
+
+Mark order as pending and reconcile fills; if partial/failed, apply retry and publish notifications.
+
+Apply nightly reconciliation to ensure follower positions match provider (or log discrepancy).
+
+Provide simulation mode that logs actions but does not send to real broker.
+
+9) Security & Compliance Checklist
+
+Password hashing (Argon2 or bcrypt), rate limiting, input validation, CSRF protection for forms.
+
+2FA (TOTP) as an option.
+
+Encrypt PII and KYC assets in object storage; revoke access keys periodically.
+
+PCI scope: avoid storing payment card details (use Stripe).
+
+Provide audit logs for all trade/order operations.
+
+Pen-test plan prior to production release.
+
+10) Testing Plan
+
+Unit tests for calculation logic (allocation, risk).
+
+Integration tests between copy engine and simulator adapter.
+
+E2E tests covering signup → KYC → follow provider → provider trade → follower receives order.
+
+Load test: simulate X providers and Y followers; measure mean latency and order success rate.
+
+Provide test data scripts to seed database with sample providers and followers.
+
+11) CI/CD + Deployment
+
+Git-based workflow: feature branches → PRs → tests → merge to main → deploy to staging.
+
+Build Docker images, push to registry.
+
+Staging and production clusters; use feature flags to turn off live auto-copier for staging.
+
+Infrastructure as code (Terraform) recommended for cloud resources.
+
+12) Deliverables & Acceptance Criteria (explicit)
+
+Deliver each sprint with:
+
+UI wireframes / Figma file for web flows.
+
+Frontend: React app, responsive pages.
+
+Backend: API server(s), database schema migrations, adapters.
+
+Docs: OpenAPI spec, README, setup & deploy guide.
+
+Tests: automated test suite + test reports.
+
+Deployment: Docker images, k8s manifests or Docker Compose for MVP.
+
+Demo: recorded video showing provider opens a sandbox trade and followers’ sandbox accounts receive matching orders.
+
+Acceptance tests (must pass):
+
+Sign up + complete KYC (status verified or pending).
+
+Provider creates a strategy and opens a sandbox trade.
+
+Follower configures copy settings and receives a properly sized order in sandbox.
+
+Admin can suspend a provider and it stops emitting copy events.
+
+Automated reconciliation confirms follower and provider positions in simulation.
+
+13) Roadmap to Desktop & Mobile Apps
+
+Use the web UI components and backend APIs as single source of truth.
+
+For desktop EXE: wrap the web app in Electron (with native notifications) for Windows. Provide an installer build.
+
+For Android APK: build with Capacitor or React Native wrapping the web UI, or build a native app that calls same APIs. Provide signed APK.
+
+Ensure local secure storage of session tokens and follow platform best practices for native builds.
+
+Desktop/mobile must support offline view and push notifications.
+
+14) Developer Instructions & Constraints
+
+Write clean, documented code; provide architecture diagrams.
+
+Expose feature flags to toggle auto-copy engine and real broker mode.
+
+Use environment variables for secrets and provide .env.example.
+
+Provide a dev script to run local stacks: docker-compose up --build.
+
+Prefer small, testable microservices but accept a monolith for MVP if time constrained.
+
+Use semantic versioning and maintain a changelog.
+
+15) Acceptance: Deliver a PoC within 4 sprints (you choose sprint length). For each sprint provide: user stories, tasks, wireframes, PRs, tests, and a short demo video/GIF.
+16) Optional: Copy This Prompt Into The Builder
+
+Start work immediately using the above spec. Prioritize core flows listed in section 2, validate broker integration choices with a short feasibility check, and default to simulator + one exchange/broker adapter for MVP if real integration is costly.
