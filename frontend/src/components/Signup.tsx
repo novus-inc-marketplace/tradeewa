@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import authService from './services/authService';
+import authService from '../services/authService';
 
 const Signup: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +10,7 @@ const Signup: React.FC = () => {
     e.preventDefault();
     try {
       await authService.signup(email, password);
-      setMessage('Signup successful!');
+      setMessage('Signup successful! Please check your email for a verification link.');
     } catch (error) {
       setMessage('Signup failed.');
     }

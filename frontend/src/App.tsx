@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import VerifyEmail from './components/VerifyEmail';
 
 function Home() {
   return (
@@ -31,6 +32,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>

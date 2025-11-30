@@ -16,7 +16,12 @@ const login = (email, password) => {
   return axios.post(`${API_URL}/token`, params);
 };
 
+const verifyEmail = (token: string) => {
+  return axios.get(`${API_URL}/verify-email/${token}`);
+};
+
 export default {
   signup,
   login,
+  verifyEmail,
 };
